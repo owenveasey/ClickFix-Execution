@@ -1,0 +1,6 @@
+let fakeCaptchaCommandPatterns = dynamic(["robot", "captcha", "recaptcha", "human", "verify", "verification"]);
+DeviceProcessEvents
+| where ProcessCommandLine   has_any (fakeCaptchaCommandPatterns) //  fake captcha strings in CommandLine
+    and ProcessCommandLine has_any ("http://","https://") // Detecting URLs where they pull first stage payload
+| where InitiatingProcessFileName has @"explorer.exe" // Parent process is explorer.exe since TA tricks victim to run command from run box 
+| where not (FileName has_any("msedge.exe", "chrome.exe")) //Tune out FPs - browser process with url arguments that match one of the strings and you might need to remove internal SharePoint URLs causing noise
